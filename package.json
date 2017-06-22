@@ -1,0 +1,21 @@
+{
+  "name": "user-management-panel",
+  "version": "1.0.0",
+  "description": "Simple server which can handle simple users management workflow.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vanb4ik <Vanb4ik>",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "node-static": "^0.7.8",
+    "jquery": "^3.2.1",
+    "uuid": "^3.0.1",
+    "knockout":"^3.4.2",
+    "toastr":"^2.1.2",
+    "bootstrap": "^3.3.7"
+  }
+}

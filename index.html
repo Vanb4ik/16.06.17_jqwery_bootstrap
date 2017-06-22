@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="node_modules/toastr/build/toastr.min.css">
+    <link href="styles/main.css" type="text/css" rel="stylesheet"/>
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet"/>
+
+</head>
+<body>
+<div class="container-fluid">
+
+    <div class="navbar-menu">
+        <nav class="navbar navbar-inverse <!--navbar-fixed-top-->">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">ZaxidNetClone</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#"><i class="glyphicon glyphicon-user"></i>
+                        Автори та статті</a></li>
+                    <li><a href="#">Анонси</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <img class="img-rounded nav-image" src="http://placehold.it/200x100" alt="Photo">
+                    </li>
+                    <li>
+                        <a href="#">Привіт ім'я користувача</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="glyphicon glyphicon-log-out"></i>Вийти</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <div class="header">
+        <div class="page-header">
+            <h1>Панель управління авторами та статтями</h1>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12 col-sm-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><!--кнопки з ліва-->
+                        <div class="panel-heading">Автори
+                            <a href="#"><i class="glyphicon glyphicon-plus"></i></a><!--Додати користувача-->
+                            <div class="btn-group btn-group-xs pull-right">
+                                <button class="btn btn-danger"
+                                        data-bind="enable:selectedUser,
+                                        click:removeSelecttedUser">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                    Видалити
+                                </button>
+                                <button class="btn btn-warning">
+                                    <span class="glyphicon glyphicon-thumbs-down"
+                                          data-bind="enable:selectedUser"></span>
+                                    Забанити
+                                </button>
+                            </div>
+                        </div>
+                    </div><!--кнопки з ліва-->
+                    <div class="panel-body" style="padding: 0px">
+                        <ul class="media-list"
+                            data-bind="foreach: { data: users, as: 'user'}" >
+                            <li  class="list-group-item"
+                                 data-bind="
+                                 attr:{id:user.id},
+                                 click:$parent.selectUser,
+                                 css:{active:$parent.selectedUser()==$data}">
+                                <div class="media-left">
+                                    <a href="#">
+                                        <img class="media-object thumbnail pannel-left-photo"
+                                             src="http://placehold.it/200x200"
+                                             data-bind="attr: {src: user.photo}"
+                                             alt="Photo"
+                                        >
+                                    </a>
+                                </div>
+                                <div class="media-body">
+                                    <h5 class="media-heading">
+                                        <span data-bind="text:user.fullName">
+                                            Ім'я користувача
+                                        </span>
+                                        <!--<span class="badge pull-right">
+                                            Блогер
+                                        </span>-->
+                                    </h5>
+                                    <span class="label label-warning">Запит на публікацію</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        <!--<ul class="pagination">
+                            <li class="disabled"><a href="#">&laquo;</a></li>
+                            <li class="active"><a href="#">1</a></li>
+                            <li><a href="#">2</a></li>
+                            <li><a href="#">3</a></li>
+                            <li><a href="#">4</a></li>
+                            <li><a href="#">5</a></li>
+                            <li><a href="#">&raquo;</a></li>
+                        </ul>-->
+                        <ul class="pagination"
+                            data-bind="foreach: { data: pagination, as: 'select'}">
+                            <li data-bind="click:$parent.selectGroup"><!--вибрати групу чуваків-->
+                                <a href="#"
+                                   data-bind="click:$parent.selectGroup,
+                                              text:select">:-)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--Ліва частина-->
+            <div id="left_form"
+                 data-bind="with:selectedUser"
+                 class="col-xs-12 col-sm-8 ">
+                <form-group>
+                    <div class=" form-group row">
+                        <div class="col-sm-6">
+                            <div class="form-group row">
+                                <label for="/photo/" class="col-xs-12 col-sm-4">Фото</label>
+                                <div class="col-xs-12 col-sm-8">
+                                    <a href="#" id="/photo/">
+                                        <img src="http://placehold.it/960x540"
+                                             alt="Photo"
+                                             class="thumbnail changing-photo"
+                                             data-bind="attr:{src:photo}">
+
+                                        <i class="glyphicon glyphicon-transfer"></i>
+                                        Змінити
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="container-fluid">
+                                <form class="form-horizontal"
+                                      name="users-edit"
+                                      method="POST"
+                                      novalidate
+                                      data-bind="submit: $parent.saveUser">
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4"
+                                               for="fullname">Full name:</label>
+                                        <input class="col-xs-12 col-sm-8"
+                                               type="text" name="fullname"
+                                               id="fullname"
+                                               data-bind="value:fullName">
+
+                                    </div>
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4" for="birthday">Birthday:</label>
+                                        <input class="col-xs-12 col-sm-8"
+                                               type="text"
+                                               name="birthday"
+                                               id="birthday"
+                                               data-bind="value:birthday">
+
+                                    </div>
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4" for="profession">Profession:</label>
+                                        <input class="col-xs-12 col-sm-8"
+                                               type="text"
+                                               name="profession"
+                                               id="profession"
+                                               data-bind="value:profession">
+
+                                    </div>
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4" for="address">Address:</label>
+                                        <input class="col-xs-12 col-sm-8"
+                                               type="text"
+                                               name="address"
+                                               id="address"
+                                               data-bind="value:address">
+                                    </div>
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4" for="country">Country:</label>
+                                        <select class="col-xs-12 col-sm-8"
+                                                name="country"
+                                                id="country"
+                                                data-bind="options: $parent.countries,value: country">
+
+                                        </select>
+                                    </div>
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4" for="short-info">ShortInfo:</label>
+                                        <textarea class="col-xs-12 col-sm-8"
+                                                  name="short-info"
+                                                  id="short-info"
+                                                  data-bind="value:shortInfo">
+
+                                        </textarea>
+                                    </div>
+                                    <div class="row form-group">
+                                        <label class="col-xs-12 col-sm-4" for="full-info">DetailedInfo:</label>
+                                        <textarea class="col-xs-12 col-sm-8"
+                                                  name="full-info"
+                                                  id="full-info"
+                                                  rows="10"
+                                                  cols="45"
+                                                  data-bind="value:fullInfo">
+
+                                        </textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="btn-group pull-right">
+                                            <button class="btn btn-primary"><i class="glyphicon glyphicon-floppy-save"></i>
+                                                Зберегти
+                                            </button>
+                                            <button class="btn btn-default"
+                                                    data-bind="click:$parent.cancel">
+                                                    Скасувати
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </form-group>
+            </div><!--Права частина-->
+        </div>
+    </div>
+</div>
+
+
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/toastr/build/toastr.min.js"></script>
+<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="node_modules/knockout/build/output/knockout-latest.js"></script>
+<!--<script src="node_modules/knockout/build/output/knockout-latest.debug.js"></script>-->
+<script src="js/anomationPage.js"></script>
+
+</body>
+</html>
