@@ -41,138 +41,117 @@
 
 /*http://knockoutjs.com/documentation/submit-binding.html*/
 var viewModel = {
-    users: ko.observableArray([]), // масив для списку користувачів
-    countries:ko.observableArray([]), // масив для створення списку крїн
-    pagination:ko.observableArray([]), // масив для створення пагінацї
-    selectedUser:ko.observable(null),// поки selectedUser то заховати форму
-    saveUser:function () // збереженя користувача
+    previews:ko.observableArray([]), // масив користувачів
+    selectedUser:ko.observable(null), // обсервабл поле вибраного коримтувача
+    countries:ko.observableArray([]),
+    currentPage:ko.observable(1), // номер сторінки з загальної кількості сторінок яку потрібо завантажити
+    pageNumbers:ko.pureComputed(function()
     {
-        /*потрібно знайти користуача та обновити поля в формі
-         * по ід найти користувача та переписати фото,..*/
-        var oldUser=viewModel.selectedUser(); // створюємо нового користувача і записуємо  ноього знчення
-
-        viewModel.updateUser(oldUser);
-
-       /* toastr.success("User saved","Succes");*/
-    },
-    updateUser: function (newUser) // обнолення користувачча на сервері при збережені
+       var pageNumbers=[];
+       for (var i=1; i<=viewModel.totalPages();i++)//формування пагінації
+       {
+           pageNumbers.push(i);//формємо масив з номерами сторінок
+       }
+       return pageNumbers;
+       console.log(pageNumbers);
+    }),
+    canRemoveSelectedUser:ko.pureComputed(function ()//кнопка видалити активна/не активна
     {
-        var userToUpdate =
+        return viewModel.selectedUser() && viewModel.selectedUser().id;
+        // визначаємо якого користувача по ід видалити
+    }),
+    totalPages:ko.observable(0),// загальна кількість сторінок
+    loadPreviews:function()//початкове завантаження користувачів
+    {
+        $.getJSON("/api/users/"+viewModel.currentPage()+"/10/preview") //тут завантажуємо вкорочану інформацію
+            .done(function (response)
             {
-                id:newUser.id,
-                fullName:newUser.fullName,
-                birthday:newUser.birthday,
-                profession:newUser.profession,
-                country:newUser.country,
-                fullInfo:newUser.fullInfo,
-                address:newUser.address,
-                shortInfo:newUser.shortInfo
-                /*фото потім*/
-            };
-        viewModel.put(userToUpdate);
-        toastr.success("User saved","Succes");
+                viewModel.totalPages (response.totalPages);// встановлюємо загальну к-ть сторінок які прийшли з сервера
+                viewModel.previews(response.data);// передаємомасив юзерів щоо прийшли від сервера
+                /*console.log(response);*/
+            });
     },
-    selectUser:function (user) //вибір конкретного корисувача
+    loadCountries:function ()//завантаження списку країн
     {
-        /*viewModel.loadUsers();*/
-        viewModel.selectedUser(user) ;// а тут вибирається конкретний користувач
-       /* console.log(user);*/
+      $.getJSON("api/countries")
+          .done (function (e)
+          {
+              viewModel.countries(e);
+          });
     },
-    removeSelecttedUser:function () // видалення користуваа
+    editUser:function (userToEdit)//ф-ці вибору конкретного користувача по ід для редагування в формі
     {
-        var user=viewModel.selectedUser();
-
-        viewModel.delete(user);
-        viewModel.selectedUser(null);
-    },
-    selectGroup:function (selected) //пагінація
-    {
-
-        viewModel.loadUsers(selected,null,"");
-        viewModel.selectedUser(null);
-        /*console.log(selected);*/
-    },
-    loadUsers:function (slectGroup, amount, preview) //початкове читання користувачів
-    {
-        var slect = slectGroup||1;
-        var amou =amount||5;
-        var pre= preview||"";
-
-
-       /* console.log(slect,amou,pre);*/
-        $.ajax
-        ({
-            url: "/api/users/"+slect+"/"+amou+"/"+pre,
-            type: "GET",
-            success: function (result)
-            {
-                var paginationMass = [];
-                for (var i =0;i<result.totalPages;i++)
-                {
-                    paginationMass[i]=i+1;
-                }
-                viewModel.users(result.data);
-                viewModel.pagination(paginationMass);
-
-
-                // console.log(result);
-                // console.log(paginatnionMass)
-            }
-        });
-
-    },
-    cancel:function ()// кенсел  формі
-    {
-        viewModel.selectedUser(null);//щоб скинути фокус з юзера і форма хоається бо нема вибраного юзера
-    },
-    loadCountries:function ()//залити країни
-    {
-        $.ajax
-        ({
-            url: "/api/countries",
-            type: "GET",
-            success: function (result)
-            {
-                viewModel.countries(result);
-                 /*console.log(result);*/
-                // console.log(paginatnionMass)
-            }
+        /*console.log(userToEdit);*/
+        $.getJSON("/api/users/"+userToEdit.id)
+            .done(function (user)
+        {
+            viewModel.selectedUser(user);//тут повертається конкретний користувач з повним набором полів
+           /* console.log(user);*/
         });
     },
-    put:function (attr)//редагуання на сервері
+    handleSaveUser:function () //тут або додати нового користувача або редагувати
     {
-        var data =JSON.stringify(attr);
-        console.log(attr);
+        var type = viewModel.selectedUser().id?"PUT":"POST";
+
         $.ajax
         ({
-            contentType: "application/json",
             url: "/api/users/",
-            type: "PUT",
-            data: data,
-            success: function (result)
+            type: type,
+            data:JSON.stringify(viewModel.selectedUser()),
+            contentType:"application/json",
+            success: function (savedData)
             {
-                viewModel.loadUsers(null,null,"");
-                /*console.log(result);*/
-
+                viewModel.loadPreviews();
+                viewModel.editUser(savedData)
             }
         });
     },
-    delete:function (attr) // видалення на сервері
+    goToPrevPage:function ()//стрілочка пагінації назад
+    {
+        if (viewModel.currentPage()<=1) //якщо поточна сторінка менша рівна 1 то нічого не робити
+        {
+            return;
+        }
+        viewModel.goToPage(viewModel.currentPage()-1) // то перейти до сторінки на 1 меншу за поточну
+    },
+    goToNextPage:function ()//стрілочка пагінації вперід
+    {
+        if (viewModel.currentPage() >=viewModel.totalPages())
+        {
+            return;
+        }
+        viewModel.goToPage(viewModel.currentPage()+1)
+    },
+    goToPage:function (pageNum)//ф-ія вибору групи ( получаєм номер групи сторінок )
+    {
+        if (viewModel.currentPage()!= pageNum)
+        {
+            viewModel.currentPage(pageNum);
+            viewModel.loadPreviews();
+            // встановлюємо і грузимо користувачів
+        }
+    },
+    removeSelectedUser:function ()//видалення конкретного користувача
     {
         $.ajax
         ({
-            url: "/api/users/"+attr.id,
+            url: "/api/users/"+viewModel.selectedUser().id,
             type: "DELETE",
-            success: function (result)
+            success: function ()
             {
-                viewModel.loadUsers(null,null,"");
+                viewModel.loadPreviews();
+                viewModel.selectedUser(null);
             }
         });
-    }
+    },
+    addNewUser:function ()// додати нового користувача
+    {
+        viewModel.selectedUser({});
+    }//
 };
 ko.applyBindings(viewModel);
-viewModel.loadUsers(null,null,"");
 viewModel.loadCountries();
+viewModel.loadPreviews();
 
 
 

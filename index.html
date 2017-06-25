@@ -52,17 +52,23 @@
                 <div class="panel panel-default">
                     <div class="panel-heading"><!--кнопки з ліва-->
                         <div class="panel-heading">Автори
-                            <a href="#"><i class="glyphicon glyphicon-plus"></i></a><!--Додати користувача-->
+                            <a href="#"
+                               data-bind="click:addNewUser">
+                                <i class="glyphicon glyphicon-plus">
+
+                                </i>
+                            </a><!--Додати користувача-->
                             <div class="btn-group btn-group-xs pull-right">
                                 <button class="btn btn-danger"
-                                        data-bind="enable:selectedUser,
-                                        click:removeSelecttedUser">
+                                        data-bind="click:removeSelectedUser,enable:canRemoveSelectedUser">
+                                    <!--
+                                    canRemoveSelectedUser - обраховує тру чи фолс
+                                    -->
                                     <i class="glyphicon glyphicon-trash"></i>
                                     Видалити
                                 </button>
-                                <button class="btn btn-warning">
-                                    <span class="glyphicon glyphicon-thumbs-down"
-                                          data-bind="enable:selectedUser"></span>
+                                <button class="btn btn-warning" data-bind="enable:canRemoveSelectedUser">
+                                    <span class="glyphicon glyphicon-thumbs-down"></span>
                                     Забанити
                                 </button>
                             </div>
@@ -70,30 +76,40 @@
                     </div><!--кнопки з ліва-->
                     <div class="panel-body" style="padding: 0px">
                         <ul class="media-list"
-                            data-bind="foreach: { data: users, as: 'user'}" >
+                            data-bind="foreach: previews">
                             <li  class="list-group-item"
-                                 data-bind="
-                                 attr:{id:user.id},
-                                 click:$parent.selectUser,
-                                 css:{active:$parent.selectedUser()==$data}">
+                                 data-bind="click:$parent.editUser,
+                                            css:{active: $parent.selectedUser() &&
+                                            $parent.selectedUser().id===$data.id}">
+                                <!--
+                                при кліку викликаємо editUser - де встановлюємо вибраного користувача і читаєо додаткові поля користувача з сервера
+                                якщо є вибране поле і в цьому полі ід збігається з ід вибраного елемента то додаємо клас актів
+                                selectedUser() - якщо обсервадл поле то треба викликати з дужками
+                                -->
                                 <div class="media-left">
                                     <a href="#">
                                         <img class="media-object thumbnail pannel-left-photo"
                                              src="http://placehold.it/200x200"
-                                             data-bind="attr: {src: user.photo}"
                                              alt="Photo"
-                                        >
+                                             data-bind="attr:{src:photo,alt:fullName}">
                                     </a>
                                 </div>
                                 <div class="media-body">
-                                    <h5 class="media-heading">
-                                        <span data-bind="text:user.fullName">
+                                    <h4 class="media-heading">
+                                        <span data-bind="text:fullName">
                                             Ім'я користувача
-                                        </span>
+                                        </span> <br>
+
                                         <!--<span class="badge pull-right">
                                             Блогер
                                         </span>-->
-                                    </h5>
+                                    </h4>
+                                    <div>
+                                        <span class=""
+                                              data-bind="text:country">
+                                            Країна
+                                        </span>
+                                    </div>
                                     <span class="label label-warning">Запит на публікацію</span>
                                 </div>
                             </li>
@@ -109,12 +125,25 @@
                             <li><a href="#">5</a></li>
                             <li><a href="#">&raquo;</a></li>
                         </ul>-->
-                        <ul class="pagination"
-                            data-bind="foreach: { data: pagination, as: 'select'}">
-                            <li data-bind="click:$parent.selectGroup"><!--вибрати групу чуваків-->
+                        <ul class="pagination">
+                            <li data-bind="css:{disabled:currentPage()===1}"><!--якщо перша сторінка то назад кнопка не активна-->
                                 <a href="#"
-                                   data-bind="click:$parent.selectGroup,
-                                              text:select">:-)
+                                   data-bind="click:goToPrevPage">
+                                    <i class="glyphicon glyphicon-arrow-left"></i>
+                                </a>
+                            </li>
+                            <!-- ko foreach: pageNumbers -->
+                            <li data-bind="css: {active: $parent.currentPage()===$data}">
+                                <a href="#"
+                                   data-bind="text:$data,
+                                   click:$parent.goToPage">:-)
+                                </a>
+                            </li>
+                            <!-- /ko -->
+                            <li data-bind="css:{disabled:currentPage()===totalPages()}"><!--якщо перша сторінка то назад кнопка не активна-->
+                                <a href="#"
+                                   data-bind="click:goToNextPage">
+                                    <i class="glyphicon glyphicon-arrow-right"></i>
                                 </a>
                             </li>
                         </ul>
@@ -122,8 +151,8 @@
                 </div>
             </div><!--Ліва частина-->
             <div id="left_form"
-                 data-bind="with:selectedUser"
-                 class="col-xs-12 col-sm-8 ">
+                 class="col-xs-12 col-sm-8"
+                 data-bind="with:selectedUser">
                 <form-group>
                     <div class=" form-group row">
                         <div class="col-sm-6">
@@ -134,7 +163,7 @@
                                         <img src="http://placehold.it/960x540"
                                              alt="Photo"
                                              class="thumbnail changing-photo"
-                                             data-bind="attr:{src:photo}">
+                                             data-bind="attr:{src:photo,alt:fullName}">
 
                                         <i class="glyphicon glyphicon-transfer"></i>
                                         Змінити
@@ -148,7 +177,8 @@
                                       name="users-edit"
                                       method="POST"
                                       novalidate
-                                      data-bind="submit: $parent.saveUser">
+                                      data-bind="submit:$parent.handleSaveUser">
+
                                     <div class="row form-group">
                                         <label class="col-xs-12 col-sm-4"
                                                for="fullname">Full name:</label>
@@ -189,7 +219,7 @@
                                         <select class="col-xs-12 col-sm-8"
                                                 name="country"
                                                 id="country"
-                                                data-bind="options: $parent.countries,value: country">
+                                                data-bind="options:$parent.countries, value:country">
 
                                         </select>
                                     </div>
@@ -208,8 +238,7 @@
                                                   name="full-info"
                                                   id="full-info"
                                                   rows="10"
-                                                  cols="45"
-                                                  data-bind="value:fullInfo">
+                                                  cols="45" data-bind="value:fullInfo">
 
                                         </textarea>
                                     </div>
@@ -219,8 +248,7 @@
                                             <button class="btn btn-primary"><i class="glyphicon glyphicon-floppy-save"></i>
                                                 Зберегти
                                             </button>
-                                            <button class="btn btn-default"
-                                                    data-bind="click:$parent.cancel">
+                                            <button class="btn btn-default">
                                                     Скасувати
                                             </button>
                                         </div>
