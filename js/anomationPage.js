@@ -40,6 +40,7 @@
 * */
 
 /*http://knockoutjs.com/documentation/submit-binding.html*/
+
 var viewModel = {
     previews:ko.observableArray([]), // масив користувачів
     selectedUser:ko.observable(null), // обсервабл поле вибраного коримтувача
@@ -85,19 +86,20 @@ var viewModel = {
         $.getJSON("/api/users/"+userToEdit.id)
             .done(function (user)
         {
-            viewModel.selectedUser(user);//тут повертається конкретний користувач з повним набором полів
-           /* console.log(user);*/
+            viewModel.selectedUser(new  User(user));//тут повертається конкретний користувач з повним набором полів
+           /* console.log(user);
+            console.log(viewModel.selectedUser());*/
         });
     },
     handleSaveUser:function () //тут або додати нового користувача або редагувати
     {
         var type = viewModel.selectedUser().id?"PUT":"POST";
-
+        /*console.log(viewModel.selectedUser().id);*/
         $.ajax
         ({
             url: "/api/users/",
             type: type,
-            data:JSON.stringify(viewModel.selectedUser()),
+            data:ko.toJSON(viewModel.selectedUser()), // бо обсервабел поля
             contentType:"application/json",
             success: function (savedData)
             {
@@ -105,6 +107,7 @@ var viewModel = {
                 viewModel.editUser(savedData)
             }
         });
+        toastr.success("User saved","Succes");
     },
     goToPrevPage:function ()//стрілочка пагінації назад
     {
@@ -146,12 +149,52 @@ var viewModel = {
     },
     addNewUser:function ()// додати нового користувача
     {
-        viewModel.selectedUser({});
-    }//
+        viewModel.selectedUser(new User({}));
+    },
+    cancelSelection:function ()//кнопка кенсел на формі
+    {
+        viewModel.selectedUser(null);
+    },
+    openFileDialog:function ()
+    {
+        document.getElementById("openFileDialogElement").click();
+    },
+    uploadImage:function (ctx,e)
+    {
+        /*  console.log(arguments);*/
+        var files = e.target.files;// якщо нічого не вибрали то нічого не робити
+        if(!files.length)
+        {
+            return;
+        }
+        var ourImage = files[0];
+        var fileRider = new FileReader();
+        fileRider.readAsDataURL(ourImage);
+        fileRider.onloadend = function ()
+        {
+            var dataURI =  fileRider.result;
+            viewModel.selectedUser().photo(dataURI);
+        };
+    }
 };
 ko.applyBindings(viewModel);
 viewModel.loadCountries();
 viewModel.loadPreviews();
+function User (json)
+{
+    this.id         =(json.id);
+    this.fullName   =(json.fullName);
+    this.birthday   =(json.birthday);
+    this.profession =(json.profession);
+    this.email      =(json.email);
+    this.address    =(json.address);
+    this.country    =(json.country);
+    this.shortInfo  =(json.shortInfo);
+    this.fullInfo   =(json.fullInfo);
+    this.photo      =ko.observable(json.photo);
+}
+
+
 
 
 

@@ -1,0 +1,26 @@
+.nav-image {
+  background-size: contain;
+  max-height: 40px;
+  max-width: 100px;
+  margin-top: 5px;
+}
+.header {
+  margin-top: 100px;
+  display: block;
+}
+.media-list .media {
+  margin: 0;
+  padding: 10px 0 0 0;
+  border-bottom: 1px solid darkgray;
+  border-top: 1px solid darkgray;
+}
+.pannel-left-photo {
+  background-size: contain;
+  max-height: 100px;
+  max-width: 100px;
+}
+.changing-photo {
+  background-size: contain;
+  max-height: 200px;
+  max-width: 200px;
+}

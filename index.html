@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="node_modules/toastr/build/toastr.min.css">
     <link href="styles/main.css" type="text/css" rel="stylesheet"/>
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles/bootstrap-datetimepicker.min.css" />
+
 
 </head>
 <body>
@@ -159,12 +161,21 @@
                             <div class="form-group row">
                                 <label for="/photo/" class="col-xs-12 col-sm-4">Фото</label>
                                 <div class="col-xs-12 col-sm-8">
-                                    <a href="#" id="/photo/">
+                                    <input type="file" style="display: none;"
+                                           id="openFileDialogElement"
+                                           data-bind="event:{change:$parent.uploadImage}">
+
+                                    </input>
+                                    <a href="#" id="/photo/"
+                                       data-bind="click:$parent.openFileDialog">
                                         <img src="http://placehold.it/960x540"
                                              alt="Photo"
                                              class="thumbnail changing-photo"
-                                             data-bind="attr:{src:photo,alt:fullName}">
-
+                                             data-bind="attr:{src:photo,alt:fullName}"
+                                        >
+                                    </a>
+                                    <a href="#"
+                                       data-bind="click:$parent.openFileDialog">
                                         <i class="glyphicon glyphicon-transfer"></i>
                                         Змінити
                                     </a>
@@ -189,14 +200,15 @@
 
                                     </div>
                                     <div class="row form-group">
-                                        <label class="col-xs-12 col-sm-4" for="birthday">Birthday:</label>
-                                        <input class="col-xs-12 col-sm-8"
+                                        <label class="col-xs-12 col-sm-4" for="datetimepicker">Birthday:</label>
+                                        <input class="col-xs-12 col-sm-8 form"
                                                type="text"
                                                name="birthday"
-                                               id="birthday"
+                                               id="datetimepicker"
                                                data-bind="value:birthday">
 
                                     </div>
+
                                     <div class="row form-group">
                                         <label class="col-xs-12 col-sm-4" for="profession">Profession:</label>
                                         <input class="col-xs-12 col-sm-8"
@@ -206,6 +218,7 @@
                                                data-bind="value:profession">
 
                                     </div>
+
                                     <div class="row form-group">
                                         <label class="col-xs-12 col-sm-4" for="address">Address:</label>
                                         <input class="col-xs-12 col-sm-8"
@@ -245,10 +258,12 @@
 
                                     <div class="form-group">
                                         <div class="btn-group pull-right">
-                                            <button class="btn btn-primary"><i class="glyphicon glyphicon-floppy-save"></i>
+                                            <button class="btn btn-primary">
+                                                <i class="glyphicon glyphicon-floppy-save"></i>
                                                 Зберегти
                                             </button>
-                                            <button class="btn btn-default">
+                                            <button class="btn btn-default"
+                                                    data-bind="click:$parent.cancelSelection">
                                                     Скасувати
                                             </button>
                                         </div>
@@ -263,15 +278,31 @@
             </div><!--Права частина-->
         </div>
     </div>
+
 </div>
 
+<div class="container"style="padding: 10px 0 50px 0">
+    <div class="row">
+        <div class='col-sm-6'>
+            DATE_TIME_PICKER
+            <input type='text' class="form-control" id='datetimepicker1' />
+        </div>
+    </div>
+</div>
 
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="js/moment/moment-with-locales.min.js"></script>
 <script src="node_modules/toastr/build/toastr.min.js"></script>
 <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/moment/bootstrap-datetimepicker.min.js"></script>
 <script src="node_modules/knockout/build/output/knockout-latest.js"></script>
 <!--<script src="node_modules/knockout/build/output/knockout-latest.debug.js"></script>-->
 <script src="js/anomationPage.js"></script>
 
+<script type="text/javascript">
+    $(function () {
+        $('#datetimepicker1').datetimepicker({language: 'ua'});
+    });
+</script>
 </body>
 </html>
